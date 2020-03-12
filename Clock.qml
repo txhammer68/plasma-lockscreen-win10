@@ -32,86 +32,28 @@ Item {
     property var font_style1:"Michroma"
     property var font_style2:"Noto Sans"
     
-    Text {
-        id:time
-        anchors.top:root.top
-        bottomPadding:-20
-        leftPadding:-10
-        text: Qt.formatTime(timeSource.data["Local"]["DateTime"],"h:mm ap").replace("am", "").replace("pm", "")
-        color: font_color
-        renderType: Text.QtRendering
-        font {
-            pointSize: 96
-            family: font_style1
-        }
-    }
-    Text {
-        id:date
-        anchors.top:time.bottom
-        function getOrdinal(n) {            // assigns superfix to date
-        var s=["th","st","nd","rd"],
-        v=n%100;
-        return (s[(v-20)%10]||s[v]||s[0]);
-        }
-        property var nth:getOrdinal(Qt.formatDate(timeSource.data["Local"]["DateTime"],"d"))
-        // text: Qt.formatDate(timeSource.data["Local"]["DateTime"], Qt.DefaultLocaleLongDate)
-        textFormat: Text.RichText
-        //lineHeightMode: Text.FixedHeight
-        //lineHeight: 20
-        text: Qt.formatDate(timeSource.data["Local"]["DateTime"],"MMMM  d")+"<sup>"+nth+"</sup>"
-        color: font_color
-        renderType: Text.QtRendering
-        font {
-            pointSize: 36
-            // family: config.displayFont
-            family: font_style1
-        }
-    }
-
-     Image {
-       id: wIcon
-       y:10
-       property var wIconurl:readIconFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/icon.txt")
-       anchors.top:date.bottom
-       function readIconFile(fileUrl){  // read icon code from file
+    function readIconFile(fileUrl){  // read icon code from file
        var xhr = new XMLHttpRequest;
        xhr.open("GET", fileUrl); // set Method and File
        xhr.onreadystatechange = function () {
            if(xhr.readyState === XMLHttpRequest.DONE){ // if request_status == DONE
                var response = xhr.responseText;
-               wIconurl  = response;
+               wIcon.wIconurl  = response;
                return response;
            }
-       }
+          }
        xhr.send(); // begin the request
       // return response;
-   }
-       horizontalAlignment: Image.AlignLeft
-       asynchronous : true
-       cache: false
-       // source : Weather.icon
-       source: wIconurl
-       smooth: true
-       sourceSize.width: 64
-       sourceSize.height: 64
-        }
-
-        Text {
-        id:current_weather_conditions
-        anchors.top:date.bottom
-        topPadding:5
-       // x:50
-       // y:10
-        property var temp:readTempFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/temp.txt")
-        property var desc:readDescFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/desc.txt")
-        
-        function readTempFile(fileUrl){     // read current weather temperature from text file
+      }
+      
+      
+       function readTempFile(fileUrl){     // read current weather temperature from text file
             var xhr = new XMLHttpRequest;
             xhr.open("GET", fileUrl); // set Method and File
             xhr.onreadystatechange = function () {
            if(xhr.readyState === XMLHttpRequest.DONE){ // if request_status == DONE
                var response = xhr.responseText;
-               temp = response
+               current_weather_conditions.temp = response
            }
        }
             xhr.send(); // begin the request
@@ -123,11 +65,68 @@ Item {
             xhr.onreadystatechange = function () {
             if(xhr.readyState === XMLHttpRequest.DONE){ // if request_status == DONE
                var response = xhr.responseText;
-               desc = response
+               current_weather_conditions.desc = response
            }
        }
             xhr.send(); // begin the request
    }
+    
+    Text {
+        id:time
+        anchors.top:root.top
+        bottomPadding:-20
+        leftPadding:-10
+        text: Qt.formatTime(timeSource.data["Local"]["DateTime"],"h:mm ap").replace("am", "").replace("pm", "")
+        color: font_color
+        renderType: Text.QtRendering
+        font {
+            pointSize: 84
+            family: font_style1
+        }
+    }
+    Text {
+        id:date
+        topPadding:20
+        bottomPadding:10
+        anchors.top:time.bottom
+        function getOrdinal(n) {            // assigns superfix to date
+        var s=["th","st","nd","rd"],
+        v=n%100;
+        return (s[(v-20)%10]||s[v]||s[0]);
+        }
+        property var nth:getOrdinal(Qt.formatDate(timeSource.data["Local"]["DateTime"],"d"))
+        textFormat: Text.RichText
+        text: Qt.formatDate(timeSource.data["Local"]["DateTime"],"MMMM  d")+"<sup>"+nth+"</sup>"
+        color: font_color
+        renderType: Text.QtRendering
+        font {
+            pointSize: 36
+            // family: config.displayFont
+            family: font_style1
+        }
+    }
+    
+
+     Image {
+       id: wIcon
+       property var wIconurl:readIconFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/icon.txt")
+       anchors.top:date.bottom
+       horizontalAlignment: Image.AlignLeft
+       asynchronous : true
+       cache: false
+       source: wIconurl
+       smooth: true
+       sourceSize.width: 64
+       sourceSize.height: 64
+    }
+
+        Text {
+        id:current_weather_conditions
+        anchors.top:date.bottom
+        topPadding:10
+        bottomPadding:10
+        property var temp:readTempFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/temp.txt")
+        property var desc:readDescFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/desc.txt")
         text:"         "+temp+desc
         font.family: font_style2
         font.pointSize: 24
@@ -143,26 +142,26 @@ Item {
         running: true
         repeat:  true
         onTriggered: read_txt.readTempFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/temp.txt");
-    }
-    Timer{
+        }
+        Timer{
         id: readDesc             // timer to trigger update for weather conditions
         interval: 31 * 60 * 1000   // every 30 minutes
         running: true
         repeat:  true
         onTriggered: read_txt.readDescFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/desc.txt");
-    }
-    Timer{
+        }
+        Timer{
         id: readIcon             // timer to trigger update for weather condition icon
         interval: 31 * 60 * 1000  // every 30 minutes
         running: true
         repeat:  true
         onTriggered: wIcon.readIconFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/icon.txt");
-    }
+        }
         
     Image {
         id:email_icon
         anchors.top:wIcon.bottom
-        // y: 60
+        x:10
         source: "/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/icons/email3.png"
         smooth: true
         sourceSize.width: 48
@@ -173,9 +172,7 @@ Item {
         id:email_count
         anchors.top:wIcon.bottom
         topPadding:5
-        //y: 60
-        // x:50
-        text: "        "+Gmail.count
+        text: "          "+Gmail.count
         font.family: font_style2
         font.bold:true
         font.pointSize:20

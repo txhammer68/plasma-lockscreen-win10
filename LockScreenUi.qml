@@ -184,8 +184,10 @@ PlasmaCore.ColorScope {
             id: clock
             // opacity: 1
             property Item shadow: clockShadow
-            x:100
-            y: (mainBlock.userList.y + mainStack.y)*1.8
+            // x:100
+            anchors.left:lockScreenRoot.left
+            anchors.leftMargin:100
+            y: (mainBlock.userList.y + mainStack.y)*2.2
             visible: y > 0
             // Layout.alignment: Qt.AlignBaseline
         }
@@ -249,7 +251,9 @@ PlasmaCore.ColorScope {
                 actionItems: [
                     ActionButton {
                         text: i18nd("plasma_lookandfeel_org.kde.lookandfeel", "Switch User")
-                        iconSource: "system-switch-user"
+                        // iconSource: "system-switch-user"
+                        iconSource:"/usr/share/icons/Adwaita/48x48/legacy/system-users.png"
+                        iconSize: units.iconSizes.medium
                         onClicked: mainStack.push(switchSessionPage)
                         // the current session isn't listed in the model, hence a check for greater than zero, not one
                         visible: (sessionsModel.count > 0 || sessionsModel.canStartNewSession) && sessionsModel.canSwitchUser

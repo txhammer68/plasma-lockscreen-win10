@@ -17,13 +17,11 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import QtQuick 2.2
-
+import QtQuick 2.9
 import QtQuick.Layouts 1.1
-import QtQuick.Controls 1.1
+import QtQuick.Controls 2.5
 import QtQuick.Controls.Styles 1.4
-import QtGraphicalEffects 1.0
-
+//import QtGraphicalEffects 1.12
 import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 2.0 as PlasmaComponents
 
@@ -58,7 +56,7 @@ SessionManagementScreen {
 
         PlasmaComponents.TextField {
             id: passwordBox
-            font.pointSize: theme.defaultFont.pointSize + 2
+            font.pointSize:11
             implicitHeight: 30
             Layout.fillWidth: true
             opacity: .5
@@ -68,16 +66,17 @@ SessionManagementScreen {
             inputMethodHints: Qt.ImhHiddenText | Qt.ImhSensitiveData | Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
             enabled: !authenticator.graceLocked
             revealPasswordButtonShown: true
-            
+            verticalAlignment :TextInput.AlignBottom
             style: TextFieldStyle {
             // textColor: passwordFieldOutlined ? "gray" : "gray"
             textColor:  "white"
             // placeholderTextColor: passwordFieldOutlined ? "gray" : "gray"
             placeholderTextColor: "gray"
-            passwordCharacter: config.PasswordFieldCharacter == "" ? "●●" : config.PasswordFieldCharacter
+            passwordCharacter:"●●"
+            renderType : Text.QtRendering
             background: Rectangle {
                 radius: 6
-                border.color: "gray"
+                border.color: "steelblue"
                 border.width: 1
                 // color: passwordFieldOutlined ? "black" : "black"
                 color: "black"

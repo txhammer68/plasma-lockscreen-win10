@@ -19,68 +19,75 @@
 
 // custom clock for plasma lockscreen ala windows 10 style
 // shows time,weather,email, in lower left corner
+// /usr/lib/x86_64-linux-gnu/libexec/kscreenlocker_greet --testing --theme /home/matt/.local/share/plasma/look-and-feel/DigiTech3
 
 import QtQuick 2.9
 import QtQuick.Layouts 1.1
-import QtQuick.Controls 2.5
+import QtQuick.Controls 1.1
 import org.kde.plasma.core 2.0
-import "/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/gmail.js" as Gmail
+
 
 Item {
-    id:root
-    property var font_color:"whitesmoke"
+id: root // timer for suspend-resume update
+property double startTime: 0
+property int secondsElapsed: 0
+function restartCounter() {
+root.startTime = 0;
+}
+function timeChanged() {
+if(root.startTime==0)
+{
+root.startTime = new Date().getTime(); //returns the number of milliseconds since the epoch (1970-01-01T00:00:00Z);
+}
+var currentTime = new Date().getTime();
+root.secondsElapsed = (currentTime-startTime)/1000;
+}
+    property var font_color:"white"
     property var font_style1:"Michroma"
     property var font_style2:"Noto Sans"
     
-    function readIconFile(fileUrl){  // read icon code from file
+    function readWeatherFile(fileUrl){  // read weather info from file
        var xhr = new XMLHttpRequest;
        xhr.open("GET", fileUrl); // set Method and File
        xhr.onreadystatechange = function () {
            if(xhr.readyState === XMLHttpRequest.DONE){ // if request_status == DONE
                var response = xhr.responseText;
-               wIcon.wIconurl  = response;
-               return response;
-           }
-          }
-       xhr.send(); // begin the request
-      // return response;
-      }
-      
-      
-       function readTempFile(fileUrl){     // read current weather temperature from text file
-            var xhr = new XMLHttpRequest;
-            xhr.open("GET", fileUrl); // set Method and File
-            xhr.onreadystatechange = function () {
-           if(xhr.readyState === XMLHttpRequest.DONE){ // if request_status == DONE
-               var response = xhr.responseText;
-               current_weather_conditions.temp = response
+               var data = JSON.parse(response);
+               current_weather_conditions.temp = data.temp;
+               current_weather_conditions.desc = data.conditions;
+               wIcon.wIconurl  = data.icon;
            }
        }
-            xhr.send(); // begin the request
+       xhr.send(); // begin the request
    }
 
-        function readDescFile(fileUrl){     // read current weather conditions from text file
-            var xhr = new XMLHttpRequest;
-            xhr.open("GET", fileUrl); // set Method and File
-            xhr.onreadystatechange = function () {
-            if(xhr.readyState === XMLHttpRequest.DONE){ // if request_status == DONE
+   function readEmailFile(fileUrl){  // read icon code from file
+       var xhr = new XMLHttpRequest;
+       xhr.open("GET", fileUrl); // set Method and File
+       xhr.onreadystatechange = function () {
+           if(xhr.readyState === XMLHttpRequest.DONE){ // if request_status == DONE
                var response = xhr.responseText;
-               current_weather_conditions.desc = response
+               email_count.email  = response;
            }
        }
-            xhr.send(); // begin the request
+       xhr.send(); // begin the request
    }
-    
+   
+   Component.onCompleted: {
+        readWeatherFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/weather.json")
+        readEmailFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/gmail.txt")
+    }
+   
     Text {
         id:time
         anchors.top:root.top
-        bottomPadding:-20
+        bottomPadding:-10
         leftPadding:-10
         text: Qt.formatTime(timeSource.data["Local"]["DateTime"],"h:mm ap").replace("am", "").replace("pm", "")
         color: font_color
         renderType: Text.QtRendering
         font {
-            pointSize: 84
+            pointSize: 76
             family: font_style1
         }
     }
@@ -88,6 +95,8 @@ Item {
         id:date
         topPadding:20
         bottomPadding:10
+        anchors.leftMargin:20
+        anchors.left:time.left
         anchors.top:time.bottom
         function getOrdinal(n) {            // assigns superfix to date
         var s=["th","st","nd","rd"],
@@ -102,16 +111,15 @@ Item {
         font {
             pointSize: 36
             // family: config.displayFont
-            family: font_style1
+            family: font_style2
         }
     }
-    
 
      Image {
        id: wIcon
-       property var wIconurl:readIconFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/icon.txt")
+       property var wIconurl:""
        anchors.top:date.bottom
-       horizontalAlignment: Image.AlignLeft
+       anchors.left:date.left
        asynchronous : true
        cache: false
        source: wIconurl
@@ -125,9 +133,11 @@ Item {
         anchors.top:date.bottom
         topPadding:10
         bottomPadding:10
-        property var temp:readTempFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/temp.txt")
-        property var desc:readDescFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/desc.txt")
-        text:"         "+temp+desc
+        anchors.left:wIcon.right
+        anchors.leftMargin:10
+        property var temp:""
+        property var desc:""
+        text:temp+desc
         font.family: font_style2
         font.pointSize: 24
         font.capitalization: Font.Capitalize
@@ -137,48 +147,74 @@ Item {
         }
         
         Timer {                  // timer to trigger update for weather temperature
-        id: readTemp
-        interval: 31 * 60 * 1000 // every 30 minutes
+        id: timerTemp
+        interval: 21 * 60 * 1000 // every 20 minutes
         running: true
         repeat:  true
-        onTriggered: read_txt.readTempFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/temp.txt");
+        onTriggered: {
+            root.startTime=0  // restart counter since last update
+            readWeatherFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/weather.json")
+            readEmailFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/gmail.txt")
         }
-        Timer{
-        id: readDesc             // timer to trigger update for weather conditions
-        interval: 31 * 60 * 1000   // every 30 minutes
-        running: true
-        repeat:  true
-        onTriggered: read_txt.readDescFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/desc.txt");
-        }
-        Timer{
-        id: readIcon             // timer to trigger update for weather condition icon
-        interval: 31 * 60 * 1000  // every 30 minutes
-        running: true
-        repeat:  true
-        onTriggered: wIcon.readIconFile("/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/code/icon.txt");
         }
         
+    Timer{                  // timer to trigger update after wake from suspend mode
+       id: suspend
+       interval: 60*1000 ///delay 60 secs for suspend to resume
+       running: true
+       repeat:  true
+       onTriggered: {
+                root.timeChanged()
+               if (root.secondsElapsed > 1261) {
+                readWeatherFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/weather.json")
+                readEmailFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/gmail.txt")
+        }
+     }   
+}
     Image {
         id:email_icon
         anchors.top:wIcon.bottom
-        x:10
-        source: "/home/hammer/.local/share/plasma/look-and-feel/DigiTech/contents/icons/email3.png"
+        anchors.left:date.left
+        anchors.topMargin:10
+        anchors.leftMargin:10
+        source: "/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/icons/email3.png"
         smooth: true
         sourceSize.width: 48
         sourceSize.height: 48
         }
       
       Text {
-        id:email_count
-        anchors.top:wIcon.bottom
-        topPadding:5
-        text: "          "+Gmail.count
+        id:bubble
+        anchors.topMargin: -15
+        anchors.leftMargin:-5
+        anchors.top:email_icon.top
+        anchors.left:email_icon.right
+        text: "🔴"
         font.family: font_style2
-        font.bold:true
-        font.pointSize:20
-       // color: ColorScope.textColor
+        font.pointSize:22
         color: font_color
         antialiasing : true
+        renderType: Text.QtRendering
+    }
+      
+      Text {
+        id:email_count
+         //anchors.topMargin:-20
+        topPadding:22
+        //anchors.leftMargin:-20
+         //anchors.left:bubble.right
+         //anchors.horizontalCenter:bubble.horizontalCenter
+         anchors.centerIn: bubble
+         //anchors.horizontalCenter:gold.horizontalCenter;
+         //anchors.top:bubble.bottom
+        //anchors.left:bubble.left
+        property var email:""
+        text: email
+        font.family: font_style2
+        font.pointSize:12
+        color: font_color
+        antialiasing : true
+        renderType: Text.QtRendering
     }
    
     DataSource {

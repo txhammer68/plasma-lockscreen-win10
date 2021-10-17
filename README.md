@@ -5,8 +5,8 @@
 * kb/mouse movement, hide clock and status info, show login/password Ui
 
 
-[![Plasma Lockscreen](Screenshot_20211017_154639.png)
-[![Plasma Lockscreen](Screenshot_20211017_154629.png)
+![Plasma Lockscreen](Screenshot_20211017_154639.png)
+![Plasma Lockscreen](Screenshot_20211017_154629.png)
 
 ### How it works:
 For security reasons, kscreenlocker does not allow internet acesss, 

@@ -31,6 +31,53 @@ Item {
 id: root // timer for suspend-resume update
 property double startTime: 0
 property int secondsElapsed: 0
+
+property int today:Qt.formatDate(timeSource.data["Local"]["DateTime"],"MMdd")
+property var events:{
+0101:"🎊 New Year's Day",
+0116:"🎂 Johnny Taylor's Birthday",
+0117:"🎂 Chuck Coxie's Birthday",
+0202:"Groundhog Day",
+0211:"🎂 Dad's Birthday",
+0214:"💘 Valentine's Day",
+0220:"🎂 Travis Mitchell's Birthday",
+0221:"🇺🇸 Presidents' Day",
+0302:"🎂 Joe Childers's III Birthday",
+0311:"🎂 Zach Taylor's Birthday",
+0315:"🎂 Earl Estep's Birthday",
+0317:"🍀St. Patricks day",
+0318:"🎂 Katie Taylor's Birthday",
+0322:"🎂 Kathy Clark's Birthday",
+0401:"April Fools' Day",
+0413:"🎂 Nick Taylor's Birthday",
+0422:"♻ Earth Day",
+0428:"🎂 Bridget Hemmeline's Birthday",
+0504:"🎂 Chase Taylor's Birthday",
+0505:"🇲🇽 Cinco De Mayo",
+0614:"🇺🇸 Flag Day",
+0623:"🎂 David Mounts's Birthday",
+0704:"🇺🇸 Independence Day",
+0805:"🎂 Jennifer Taylor's Birthday",
+0809:"🎂 Natalie Taylor's Birthday",
+0904:"🎂 Sheri McNiel's Birthday",
+0906:"🎂 Christine Guidroiz's Birthday",
+0911:"🇺🇸 September 11th (Patriot Day)",
+0920:"🎂 Paul Jr.'s Birthday",
+0921:"🎂 Diane Tweedle's Birthday",
+0923:"🎂 Misty Guidroz's Birthday",
+1003:"🎂 Murline Staley's Birthday",
+1009:"🎂 Brad,Nathan Brenda Taylor's Birthdays",
+1026:"🎂 Cindy Mitchell's Birthday",
+1031:"🎃 Halloween",
+1118:"🦃 Thanksgiving Day",
+1124:"🎂 Paul Clark's III Birthday",
+1212:"🎂 Geoff Simon's III Birthday",
+1216:"🎂 Andrew Taylor's Birthday",
+1224:"🎅🏻 Christmas Eve",
+1225:"🎄 Christmas Day",
+1231:"🎊 New Years Eve"
+}
+
 function restartCounter() {
 root.startTime = 0;
 }
@@ -53,31 +100,48 @@ root.secondsElapsed = (currentTime-startTime)/1000;
            if(xhr.readyState === XMLHttpRequest.DONE){ // if request_status == DONE
                var response = xhr.responseText;
                var data = JSON.parse(response);
-               current_weather_conditions.temp = data.temp;
-               current_weather_conditions.desc = data.conditions;
-               wIcon.wIconurl  = data.icon;
+               current_weather_conditions.temp = data.temperature;
+               current_weather_conditions.desc = data.cloudCoverPhrase;
+               wIcon.wIconurl="../icons/"+data.iconCode+".png"
+               response=0
            }
        }
        xhr.send(); // begin the request
    }
-
-   function readEmailFile(fileUrl){  // read icon code from file
+   
+   function readForecastFile(fileUrl){  // read weather info from file
        var xhr = new XMLHttpRequest;
        xhr.open("GET", fileUrl); // set Method and File
        xhr.onreadystatechange = function () {
            if(xhr.readyState === XMLHttpRequest.DONE){ // if request_status == DONE
                var response = xhr.responseText;
-               email_count.email  = response;
+               var data = JSON.parse(response);
+               data=data.narrative[0]
+               current_weather_conditions.forecast = data
+               response=0
            }
        }
        xhr.send(); // begin the request
    }
+
    
+   function getOrdinal(n) {            // assigns superfix to date
+        var s=["th","st","nd","rd"],
+        v=n%100;
+        return (s[(v-20)%10]||s[v]||s[0]);
+        }
+        property var nth:getOrdinal(Qt.formatDate(timeSource.data["Local"]["DateTime"],"d"))
+        
    Component.onCompleted: {
-        readWeatherFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/weather.json")
-        readEmailFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/gmail.txt")
+        readWeatherFile("/tmp/weather.json")
+        readForecastFile("/tmp/forecast.json")
     }
-   
+Rectangle {
+    width:root.width
+    height:root.height
+    color:"black"
+}
+
     Text {
         id:time
         anchors.top:root.top
@@ -93,68 +157,93 @@ root.secondsElapsed = (currentTime-startTime)/1000;
     }
     Text {
         id:date
-        topPadding:20
+        topPadding:10
         bottomPadding:10
-        anchors.leftMargin:20
+        anchors.leftMargin:10
         anchors.left:time.left
         anchors.top:time.bottom
-        function getOrdinal(n) {            // assigns superfix to date
-        var s=["th","st","nd","rd"],
-        v=n%100;
-        return (s[(v-20)%10]||s[v]||s[0]);
-        }
-        property var nth:getOrdinal(Qt.formatDate(timeSource.data["Local"]["DateTime"],"d"))
+
         textFormat: Text.RichText
-        text: Qt.formatDate(timeSource.data["Local"]["DateTime"],"MMMM  d")+"<sup>"+nth+"</sup>"
-        color: font_color
+        text: Qt.formatDate(timeSource.data["Local"]["DateTime"],"dddd, MMMM  d")// +"<sup>"+nth+"</sup>"
+        color:font_color
         renderType: Text.QtRendering
         font {
-            pointSize: 36
+            pointSize: 28
             // family: config.displayFont
             family: font_style2
         }
     }
+    
+    Text {
+            text:"<sup>"+nth+"</sup>"
+            color: font_color
+            textFormat: Text.RichText
+            font.pointSize: 28
+            anchors.left:date.right
+            anchors.top:date.top
+            renderType: Text.QtRendering
+    }
+
+
+     Text {
+        id:ev
+        text:events[today]
+        color:font_color
+        anchors.top:date.bottom
+        anchors.left:date.left
+        // color: ColorScope.textColor
+        antialiasing : true
+            font {
+            pointSize: 20
+           family: font_style2
+            italic:true
+                }
+        visible: events[today] === undefined ? false : true
+        height: ev.visible ? date.height*.7 : 0  // hide events if blank
+       }
 
      Image {
        id: wIcon
        property var wIconurl:""
-       anchors.top:date.bottom
-       anchors.left:date.left
+       anchors.top:ev.bottom
+       anchors.left:ev.left
        asynchronous : true
        cache: false
        source: wIconurl
        smooth: true
-       sourceSize.width: 64
-       sourceSize.height: 64
+       sourceSize.width: 48
+       sourceSize.height: 48
     }
 
         Text {
         id:current_weather_conditions
-        anchors.top:date.bottom
-        topPadding:10
+        anchors.top:wIcon.top
+        topPadding:5
         bottomPadding:10
+        textFormat: Text.RichText
         anchors.left:wIcon.right
         anchors.leftMargin:10
         property var temp:""
         property var desc:""
-        text:temp+desc
+        property var forecast:""
+        text:temp+"°  "+desc+"<br><&nbsp;> "+forecast
         font.family: font_style2
-        font.pointSize: 24
+        font.pointSize: 20
         font.capitalization: Font.Capitalize
-        color: font_color
+        color:font_color
         // color: ColorScope.textColor
         antialiasing : true
         }
         
         Timer {                  // timer to trigger update for weather temperature
         id: timerTemp
-        interval: 21 * 60 * 1000 // every 20 minutes
+        interval: 16 * 60 * 1000 // every 16 minutes
         running: true
         repeat:  true
         onTriggered: {
             root.startTime=0  // restart counter since last update
-            readWeatherFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/weather.json")
-            readEmailFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/gmail.txt")
+            readWeatherFile("/tmp/weather.json")
+            readForecastFile("/tmp/forecast.json")
         }
         }
         
@@ -166,56 +255,11 @@ root.secondsElapsed = (currentTime-startTime)/1000;
        onTriggered: {
                 root.timeChanged()
                if (root.secondsElapsed > 1261) {
-                readWeatherFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/weather.json")
-                readEmailFile("/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/code/gmail.txt")
+                readWeatherFile("/tmp/weather.json")
+                readForecastFile("/tmp/forecast.json")
         }
      }   
 }
-    Image {
-        id:email_icon
-        anchors.top:wIcon.bottom
-        anchors.left:date.left
-        anchors.topMargin:10
-        anchors.leftMargin:10
-        source: "/home/matt/.local/share/plasma/look-and-feel/DigiTech/contents/icons/email3.png"
-        smooth: true
-        sourceSize.width: 48
-        sourceSize.height: 48
-        }
-      
-      Text {
-        id:bubble
-        anchors.topMargin: -15
-        anchors.leftMargin:-5
-        anchors.top:email_icon.top
-        anchors.left:email_icon.right
-        text: "🔴"
-        font.family: font_style2
-        font.pointSize:22
-        color: font_color
-        antialiasing : true
-        renderType: Text.QtRendering
-    }
-      
-      Text {
-        id:email_count
-         //anchors.topMargin:-20
-        topPadding:22
-        //anchors.leftMargin:-20
-         //anchors.left:bubble.right
-         //anchors.horizontalCenter:bubble.horizontalCenter
-         anchors.centerIn: bubble
-         //anchors.horizontalCenter:gold.horizontalCenter;
-         //anchors.top:bubble.bottom
-        //anchors.left:bubble.left
-        property var email:""
-        text: email
-        font.family: font_style2
-        font.pointSize:12
-        color: font_color
-        antialiasing : true
-        renderType: Text.QtRendering
-    }
    
     DataSource {
         id: timeSource

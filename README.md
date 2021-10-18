@@ -13,7 +13,7 @@ For security reasons, kscreenlocker does not allow internet acesss,
 this is a hack using local files as JS variables <br/>
 Modified Breeze plasma qml files to get the desired effects. Designed for 1920x1080 screens. <br/>
 Using javacript node and python to create JS variables written to file system <br/>
-The JS variables are used within qml losckreen files and systemd scripts to update them. <br/>
+The JS variables are used within qml locksreen files and systemd scripts to update them. <br/>
 Using qml js functions XMLHttpRequest to read .json data files with a timer, systemd to update the .json data perodically <br/>
 Weather icons: place in -  /home/user-name/.local/share/plasma/look-and-feel/YourTheme/contents/icons <br/>
 

@@ -113,7 +113,10 @@ SessionManagementScreen {
         PlasmaComponents.Button {
             id: loginButton
             Accessible.name: i18nd("plasma_lookandfeel_org.kde.lookandfeel", "Unlock")
-            implicitHeight: passwordBox.height - units.smallSpacing * 0.5 // otherwise it comes out taller than the password field
+            //implicitHeight: passwordBox.height - units.smallSpacing * 0.5 // otherwise it comes out taller than the password field
+            implicitHeight: passwordBox.height - units.smallSpacing * .85
+            implicitWidth: passwordBox.height - units.smallSpacing * 2.5
+            visible:false
 
             PlasmaCore.IconItem { // no iconSource because if you take away half a unit (implicitHeight), "go-next" gets cut off
                     anchors.fill: parent

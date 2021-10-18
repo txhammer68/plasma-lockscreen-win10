@@ -23,6 +23,7 @@ import QtQuick.Layouts 1.1
 import QtGraphicalEffects 1.0
 import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 2.0 as PlasmaComponents
+import org.kde.plasma.components 3.0 as PlasmaComponents3
 import org.kde.plasma.private.sessions 2.0
 import "../components"
 
@@ -187,7 +188,7 @@ PlasmaCore.ColorScope {
             // x:100
             anchors.left:lockScreenRoot.left
             anchors.leftMargin:100
-            y: (mainBlock.userList.y + mainStack.y)*2.2
+            y: (mainBlock.userList.y + mainStack.y)*2.1
             visible: y > 0
             // Layout.alignment: Qt.AlignBaseline
         }
@@ -252,7 +253,7 @@ PlasmaCore.ColorScope {
                     ActionButton {
                         text: i18nd("plasma_lookandfeel_org.kde.lookandfeel", "Switch User")
                         // iconSource: "system-switch-user"
-                        iconSource:"/usr/share/icons/Adwaita/48x48/legacy/system-users.png"
+                        iconSource:"system-switch-user-symbolic"
                         iconSize: units.iconSizes.medium
                         onClicked: mainStack.push(switchSessionPage)
                         // the current session isn't listed in the model, hence a check for greater than zero, not one
@@ -420,13 +421,15 @@ PlasmaCore.ColorScope {
                 Keys.onReturnPressed: initSwitchSession()
                 Keys.onEscapePressed: mainStack.pop()
 
-                PlasmaComponents.Button {
-                    Layout.fillWidth: true
-                    font.pointSize: theme.defaultFont.pointSize + 1
+
+
+               // PlasmaComponents.Button {
+                 //   Layout.fillWidth: true
+                   // font.pointSize: theme.defaultFont.pointSize + 1
                     // the magic "-1" vtNumber indicates the "New Session" entry
-                    text: userListCurrentModelData.vtNumber === -1 ? i18nd("plasma_lookandfeel_org.kde.lookandfeel", "Start New Session") : i18nd("plasma_lookandfeel_org.kde.lookandfeel", "Switch Session")
-                    onClicked: initSwitchSession()
-                }
+                   // text: userListCurrentModelData.vtNumber === -1 ? i18nd("plasma_lookandfeel_org.kde.lookandfeel", "Start New Session") : //i18nd("plasma_lookandfeel_org.kde.lookandfeel", "Switch Session")
+                   // onClicked: initSwitchSession()
+               // }
 
                 actionItems: [
                     ActionButton {
